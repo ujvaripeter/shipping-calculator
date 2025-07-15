@@ -1,4 +1,3 @@
-import NodeGeocoder from 'node-geocoder';
 import { getDistance } from 'geolib';
 
 const FIX_ADDRESS = 'Üllői út 95., Budapest';
@@ -16,10 +15,6 @@ const COST_TABLE: Record<ServiceType, number[]> = {
   furniture_assembly:[22500, 27500, 41500, 55500, 69500, 83500, 97500],
 };
 
-const geocoder = NodeGeocoder({
-  provider: 'openstreetmap',
-  formatter: null,
-});
 
 export async function calculateShipping(params: {
   destination: string;
@@ -69,9 +64,15 @@ export async function calculateShipping(params: {
 }
 
 async function geocode(address: string) {
-  const [geo] = await geocoder.geocode(address);
+  const params = new URLSearchParams({ q: address, format: 'json', limit: '1' });
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/search?${params.toString()}`,
+    { headers: { 'User-Agent': 'shipping-calculator' } },
+  );
+  if (!res.ok) throw new Error('Geokódolási hiba.');
+  const [geo] = (await res.json()) as Array<{ lat: string; lon: string }>;
   if (!geo) throw new Error('Cím nem geokódolható.');
-  return { latitude: geo.latitude!, longitude: geo.longitude! };
+  return { latitude: parseFloat(geo.lat), longitude: parseFloat(geo.lon) };
 }
 
 function tierCost(km: number, tiers: number[]) {
