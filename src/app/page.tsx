@@ -1,6 +1,15 @@
 'use client';
 import { useState } from 'react';
 
+interface ShippingForm {
+  destination: string;
+  floors: number;
+  extreme: boolean;
+  transfer: boolean;
+  removeOld: boolean;
+  service: 'basic' | 'furniture' | 'furniture_assembly';
+}
+
 interface ShippingResult {
   km: number;
   breakdown: {
@@ -14,7 +23,7 @@ interface ShippingResult {
 }
 
 export default function Home() {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<ShippingForm>({
     destination: '',
     floors: 0,
     extreme: false,
@@ -25,8 +34,15 @@ export default function Home() {
   const [result, setResult] = useState<ShippingResult | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setForm({ ...form, [e.target.name]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { name, type, value, checked } = e.target as HTMLInputElement;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : type === 'number' ? Number(value) : value,
+    }));
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +53,6 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          floors: Number(form.floors),
         }),
       });
       const json = await res.json();
