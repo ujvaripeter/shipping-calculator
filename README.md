@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shipping Calculator
 
-## Getting Started
+## 🇭🇺 Használat
+1. Repozitórium klónozása
+   ```bash
+   git clone <repo-url>
+   cd shipping-calculator
+   npm install
+   ```
+2. Fejlesztői szerver indítása
+   ```bash
+   npm run dev
+   ```
+3. Futás tesztek
+   ```bash
+   npm run test
+   ```
+4. Lint és build
+   ```bash
+   npm run lint
+   npm run build
+   ```
 
-First, run the development server:
-
+### Példa API kérés
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+curl -X POST http://localhost:3000/api/calculate-shipping \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "address": "1076 Budapest, Garay tér 13",
+    "floors": 2,
+    "extreme": true,
+    "transfer": false,
+    "oldRemoval": true,
+    "tier": "furniture_assembly"
+  }'
+```
+Várható válasz:
+```json
+{
+  "km": 4.1,
+  "breakdown": {
+    "shipCost": 22500,
+    "floorCost": 2000,
+    "extremeCost": 5000,
+    "transferCost": 0,
+    "oldCost": 15000,
+    "total": 44500
+  }
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Vercel deploy
+1. Készíts `.env.local` ha saját email címet szeretnél megadni a Nominatim
+   szolgáltatáshoz:
+   ```env
+   NOMINATIM_EMAIL=you@example.com
+   ```
+2. `vercel --prod`
+3. Figyelj a Nominatim rate limitre (1 kérés/mp).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🇬🇧 Usage
+1. Clone the repository
+   ```bash
+   git clone <repo-url>
+   cd shipping-calculator
+   npm install
+   ```
+2. Start the dev server
+   ```bash
+   npm run dev
+   ```
+3. Run tests
+   ```bash
+   npm run test
+   ```
+4. Lint and build
+   ```bash
+   npm run lint
+   npm run build
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Example request
+See the Hungarian section above for a sample `curl` command. The JSON
+response matches the numbers produced by the original Python calculator.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Deploy to Vercel
+1. Optionally create `.env.local` with `NOMINATIM_EMAIL=you@example.com` to set
+   a custom User-Agent for Nominatim.
+2. Run `vercel --prod` to deploy.
+3. Be mindful of the free Nominatim usage policy (1 request per second).

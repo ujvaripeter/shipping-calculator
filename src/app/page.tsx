@@ -1,20 +1,48 @@
 'use client';
 import { useState } from 'react';
 
+interface ShippingForm {
+  address: string;
+  floors: number;
+  extreme: boolean;
+  transfer: boolean;
+  oldRemoval: boolean;
+  tier: 'basic' | 'furniture' | 'furniture_assembly';
+}
+
+interface ShippingResult {
+  km: number;
+  breakdown: {
+    shipCost: number;
+    floorCost: number;
+    extremeCost: number;
+    transferCost: number;
+    oldCost: number;
+    total: number;
+  };
+}
+
 export default function Home() {
-  const [form, setForm] = useState({
-    destination: '',
+  const [form, setForm] = useState<ShippingForm>({
+    address: '',
     floors: 0,
     extreme: false,
     transfer: false,
-    removeOld: false,
-    service: 'basic',
+    oldRemoval: false,
+    tier: 'basic',
   });
-  const [result, setResult] = useState<any | null>(null);
+  const [result, setResult] = useState<ShippingResult | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
-    setForm({ ...form, [e.target.name]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    const { name, type, value, checked } = e.target as HTMLInputElement;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : type === 'number' ? Number(value) : value,
+    }));
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,14 +53,17 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...form,
-          floors: Number(form.floors),
         }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       setResult(json);
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        alert(err.message);
+      } else {
+        alert('Ismeretlen hiba történt.');
+      }
     } finally {
       setLoading(false);
     }
@@ -44,8 +75,8 @@ export default function Home() {
 
       <form onSubmit={onSubmit} className="space-y-4">
         <input
-          name="destination"
-          value={form.destination}
+          name="address"
+          value={form.address}
           onChange={handleChange}
           placeholder="Célállomás"
           className="w-full rounded border p-2"
@@ -63,8 +94,8 @@ export default function Home() {
         />
 
         <select
-          name="service"
-          value={form.service}
+          name="tier"
+          value={form.tier}
           onChange={handleChange}
           className="w-full rounded border p-2"
         >
@@ -84,7 +115,7 @@ export default function Home() {
         </label>
 
         <label className="flex items-center gap-2">
-          <input type="checkbox" name="removeOld" checked={form.removeOld} onChange={handleChange} />
+          <input type="checkbox" name="oldRemoval" checked={form.oldRemoval} onChange={handleChange} />
           Régi matrac elszállítása
         </label>
 
