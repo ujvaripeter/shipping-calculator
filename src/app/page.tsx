@@ -1,6 +1,18 @@
 'use client';
 import { useState } from 'react';
 
+interface ShippingResult {
+  km: number;
+  breakdown: {
+    shipCost: number;
+    floorCost: number;
+    extremeCost: number;
+    transferCost: number;
+    oldCost: number;
+    total: number;
+  };
+}
+
 export default function Home() {
   const [form, setForm] = useState({
     destination: '',
@@ -10,7 +22,7 @@ export default function Home() {
     removeOld: false,
     service: 'basic',
   });
-  const [result, setResult] = useState<any | null>(null);
+  const [result, setResult] = useState<ShippingResult | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -31,8 +43,12 @@ export default function Home() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error);
       setResult(json);
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        alert(err.message);
+      } else {
+        alert('Ismeretlen hiba történt.');
+      }
     } finally {
       setLoading(false);
     }
